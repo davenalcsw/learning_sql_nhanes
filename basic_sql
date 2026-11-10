@@ -1,0 +1,75 @@
+--Completed SQL for Healthcare Professionals LinkedIn Learning Course
+--For the final project, instead of using the exercise files, I used NHANES data.
+--learning basic SQL functions and statements
+
+
+--Question: What is the demographic profile of the NHANES population, including age and gender distribuiton? 
+
+-- create single table in postgress
+CREATE TABLE demo
+
+-- create multiple tables in postgres
+BEGIN;
+CREATE TABLE IF NOT EXISTS depression;
+CREATE TABLE IF NOT EXISTS cardiovascular_health;
+CREATE TABLE IF NOT EXISTS CRP;
+CREATE TABLE IF NOT EXISTS food_security;
+COMMIT;
+
+-- imported data using python
+
+-- view # of rows
+SELECT COUNT (*) FROM demo
+
+
+-- List of Column Names
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'demo'
+ORDER BY ordinal_position;
+
+-- renamed columns using python
+
+
+-- Get age and gender distribution
+SELECT
+gender,
+CASE
+WHEN age BETWEEN 0 AND 17 THEN 'Youth'
+WHEN age BETWEEN 18 and 64 THEN 'Adults'
+ELSE 'Senior'
+END AS age_group,
+COUNT (*) AS patient_count
+FROM demo
+GROUP BY
+gender,
+CASE
+WHEN age BETWEEN 0 AND 17 THEN 'Youth'
+WHEN age BETWEEN 18 and 64 THEN 'Adults'
+ELSE 'Senior'
+END
+
+--Question: How is depression severity distributed?
+
+-- Create PHQ-9 score column
+
+ALTER TABLE depression_numeric
+ADD COLUMN PHQ_9_score integer GENERATED ALWAYS AS (
+DPQ010 + DPQ020 + DPQ030 + DPQ040 + DPQ050 + DPQ060 + DPQ070 + DPQ080 + DPQ090
+) STORED;
+
+
+-- Create Depression Grouping
+ALTER TABLE depression_numeric
+ADD COLUMN depression_severity text;
+
+UPDATE depression_numeric
+SET depression_severity = CASE
+		WHEN PHQ_9_score BETWEEN 0 AND 4 THEN 'Minimal'
+		WHEN PHQ_9_score BETWEEN 5 and 9 THEN 'Mild'
+		WHEN PHQ_9_score BETWEEN 10 and 14 THEN 'Moderate'
+		WHEN PHQ_9_score BETWEEN 15 and 19 THEN 'Moderately Severe'
+		WHEN PHQ_9_score BETWEEN 20 and 27 THEN 'Severe'
+		ELSE 'N/A'
+	END;
+	
